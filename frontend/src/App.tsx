@@ -55,7 +55,7 @@ function AuthScreen({ onAuthenticated, theme, onToggleTheme }: { onAuthenticated
       <form className="auth-form" onSubmit={submit}>
         {mode === 'bootstrap' && <><label>Nome do administrador<input value={name} onChange={e => setName(e.target.value)} placeholder="João Silva" required /></label><label>Nome do condomínio<input value={condominium} onChange={e => setCondominium(e.target.value)} placeholder="Residencial Axis" required /></label></>}
         <label>E-mail<input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="sindico@condominio.com" required /></label>
-        <label>Senha<input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Mínimo de 6 caracteres" required minLength={6} /></label>
+        <label>Senha<input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Mínimo de 8 caracteres" required minLength={8} /></label>
         {error && <div className="form-error">{error}</div>}
         <button className="primary-button full" disabled={loading}>{loading ? 'Processando...' : mode === 'login' ? 'Entrar' : 'Criar acesso'}</button>
       </form>
@@ -98,5 +98,14 @@ function Dashboard({ data, user, onNavigate }: { data: DashboardData | null; use
 
 function SectionPlaceholder({ title }: { title: string }) { return <div className="page placeholder"><p className="eyebrow">MÓDULO</p><h1>{title}</h1><p className="muted">A estrutura da API já está preparada. Esta tela será conectada às operações reais do módulo na próxima etapa.</p><div className="panel"><h2>Módulo em construção</h2><p>O próximo passo é transformar este espaço em CRUD completo, com listagem, filtros, cadastro, edição e validações.</p></div></div>; }
 function initials(name: string) { return name.split(' ').slice(0, 2).map(part => part[0]).join('').toUpperCase(); }
-function axiosMessage(error: unknown) { if (typeof error === 'object' && error !== null && 'response' in error) { const response = (error as { response?: { data?: { message?: string } } }).response; return response?.data?.message ?? ''; } return ''; }
+function axiosMessage(error: unknown) {
+  if (typeof error !== 'object' || error === null || !('response' in error)) return '';
+  const response = (error as { response?: { data?: { message?: string; errors?: { fieldErrors?: Record<string, string[]>; formErrors?: string[] } } } }).response;
+  const data = response?.data;
+  if (!data) return '';
+  if (data.message !== 'Dados inválidos') return data.message ?? '';
+  const fieldErrors = data.errors?.fieldErrors ?? {};
+  const messages = [...Object.values(fieldErrors).flat(), ...(data.errors?.formErrors ?? [])];
+  return messages.length ? messages.join(' ') : data.message;
+}
 export default App;
