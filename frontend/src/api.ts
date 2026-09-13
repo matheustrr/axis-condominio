@@ -28,6 +28,17 @@ export type DashboardData = {
   upcomingReservations: number;
 };
 
+export type Resident = {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  document: string | null;
+  unitId: string;
+  unit: { id: string; number: string; floor: number | null; block: { id: string; name: string } };
+  user?: { id: string; role: AuthUser['role'] } | null;
+};
+
 export async function login(email: string, password: string) {
   const { data } = await api.post<{ user: AuthUser; token: string }>('/auth/login', { email, password });
   return data;
@@ -49,6 +60,25 @@ export async function getMe() {
 export async function getDashboard() {
   const { data } = await api.get<DashboardData>('/dashboard');
   return data;
+}
+
+export async function getResidents(condominiumId: string) {
+  const { data } = await api.get<Resident[]>(`/condominiums/${condominiumId}/residents`);
+  return data;
+}
+
+export async function createResident(unitId: string, input: { name: string; email?: string; phone?: string; document?: string }) {
+  const { data } = await api.post<Resident>(`/units/${unitId}/residents`, input);
+  return data;
+}
+
+export async function updateResident(id: string, input: { name: string; email?: string; phone?: string; document?: string }) {
+  const { data } = await api.patch<Resident>(`/residents/${id}`, input);
+  return data;
+}
+
+export async function deleteResident(id: string) {
+  await api.delete(`/residents/${id}`);
 }
 
 export function saveSession(token: string) {
