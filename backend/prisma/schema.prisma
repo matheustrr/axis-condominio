@@ -1,0 +1,142 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Condominium {
+  id          String       @id @default(uuid())
+  name        String
+  document    String?      @unique
+  address     String?
+  email       String?
+  phone       String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  blocks      Block[]
+  users       User[]
+  notices     Notice[]
+  reservations Reservation[]
+  incidents   Incident[]
+  charges     Charge[]
+}
+
+model Block {
+  id            String      @id @default(uuid())
+  name          String
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  units         Unit[]
+  createdAt     DateTime     @default(now())
+  @@unique([condominiumId, name])
+}
+
+model Unit {
+  id        String     @id @default(uuid())
+  number    String
+  floor     Int?
+  blockId   String
+  block     Block      @relation(fields: [blockId], references: [id], onDelete: Cascade)
+  residents Resident[]
+  charges   Charge[]
+  createdAt DateTime   @default(now())
+  @@unique([blockId, number])
+}
+
+model Resident {
+  id          String    @id @default(uuid())
+  name        String
+  email       String?
+  phone       String?
+  document    String?
+  unitId      String
+  unit        Unit      @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  user        User?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model User {
+  id            String       @id @default(uuid())
+  name          String
+  email         String       @unique
+  passwordHash  String
+  role          UserRole     @default(RESIDENT)
+  condominiumId String
+  condominium   Condominium  @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  residentId    String?      @unique
+  resident      Resident?    @relation(fields: [residentId], references: [id], onDelete: SetNull)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model Notice {
+  id            String      @id @default(uuid())
+  title         String
+  content       String
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  publishedAt   DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Reservation {
+  id            String          @id @default(uuid())
+  area          String
+  startAt       DateTime
+  endAt         DateTime
+  status        ReservationStatus @default(PENDING)
+  condominiumId String
+  condominium   Condominium      @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  residentId    String?
+  createdAt     DateTime         @default(now())
+  @@index([condominiumId, startAt, endAt])
+}
+
+model Incident {
+  id            String       @id @default(uuid())
+  title         String
+  description   String
+  status        IncidentStatus @default(OPEN)
+  condominiumId String
+  condominium   Condominium @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model Charge {
+  id            String       @id @default(uuid())
+  description   String
+  amount        Decimal      @db.Decimal(12, 2)
+  dueDate       DateTime
+  paidAt        DateTime?
+  unitId        String
+  unit          Unit         @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  condominiumId String
+  condominium   Condominium  @relation(fields: [condominiumId], references: [id], onDelete: Cascade)
+  createdAt     DateTime     @default(now())
+  @@index([condominiumId, dueDate])
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  RESIDENT
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+enum IncidentStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CANCELLED
+}

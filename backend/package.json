@@ -1,0 +1,36 @@
+{
+  "name": "axis-condominio-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "test": "vitest run",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev"
+  },
+  "dependencies": {
+    "@fastify/cors": "latest",
+    "@fastify/swagger": "latest",
+    "@fastify/swagger-ui": "latest",
+    "bcryptjs": "latest",
+    "fastify": "latest",
+    "ioredis": "latest",
+    "jsonwebtoken": "latest",
+    "mongodb": "latest",
+    "amqplib": "latest",
+    "@prisma/client": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@types/amqplib": "latest",
+    "@types/jsonwebtoken": "latest",
+    "@types/node": "latest",
+    "prisma": "latest",
+    "tsx": "latest",
+    "typescript": "latest",
+    "vitest": "latest"
+  }
+}
