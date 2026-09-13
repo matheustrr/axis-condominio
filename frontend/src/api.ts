@@ -39,6 +39,12 @@ export type Resident = {
   user?: { id: string; role: AuthUser['role'] } | null;
 };
 
+export type CondominiumStructure = {
+  id: string;
+  name: string;
+  blocks: Array<{ id: string; name: string; units: Array<{ id: string; number: string; floor: number | null }> }>;
+};
+
 export async function login(email: string, password: string) {
   const { data } = await api.post<{ user: AuthUser; token: string }>('/auth/login', { email, password });
   return data;
@@ -59,6 +65,11 @@ export async function getMe() {
 
 export async function getDashboard() {
   const { data } = await api.get<DashboardData>('/dashboard');
+  return data;
+}
+
+export async function getCondominium(id: string) {
+  const { data } = await api.get<CondominiumStructure>(`/condominiums/${id}`);
   return data;
 }
 
